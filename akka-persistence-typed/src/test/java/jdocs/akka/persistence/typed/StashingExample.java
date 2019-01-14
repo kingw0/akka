@@ -17,12 +17,11 @@ import java.util.Optional;
 
 public class StashingExample {
 
-  //#stashing
+  // #stashing
   public static class TaskManager
-    extends EventSourcedBehavior<TaskManager.Command, TaskManager.Event, TaskManager.State> {
+      extends EventSourcedBehavior<TaskManager.Command, TaskManager.Event, TaskManager.State> {
 
-    public interface Command {
-    }
+    public interface Command {}
 
     public static final class StartTask implements Command {
       public final String taskId;
@@ -50,8 +49,7 @@ public class StashingExample {
       }
     }
 
-    public interface Event {
-    }
+    public interface Event {}
 
     public static final class TaskStarted implements Event {
       public final String taskId;
@@ -92,8 +90,10 @@ public class StashingExample {
     }
 
     public TaskManager(PersistenceId persistenceId) {
-      super(persistenceId,
-        SupervisorStrategy.restartWithBackoff(Duration.ofSeconds(1), Duration.ofSeconds(30), 0.2));
+      super(
+          persistenceId,
+          SupervisorStrategy.restartWithBackoff(
+              Duration.ofSeconds(1), Duration.ofSeconds(30), 0.2));
     }
 
     @Override
@@ -103,20 +103,18 @@ public class StashingExample {
 
     @Override
     public CommandHandler<Command, Event, State> commandHandler() {
-      return
-        commandHandlerBuilder(State.class)
-        .matchCommand(StartTask.class, this::onStartTask)
-        .matchCommand(NextStep.class, this::onNextStep)
-        .matchCommand(EndTask.class, this::onEndTask)
-        .build();
+      return commandHandlerBuilder(State.class)
+          .matchCommand(StartTask.class, this::onStartTask)
+          .matchCommand(NextStep.class, this::onNextStep)
+          .matchCommand(EndTask.class, this::onEndTask)
+          .build();
     }
 
     private Effect<Event, State> onStartTask(State state, StartTask command) {
       if (state.taskIdInProgress.isPresent()) {
         if (state.taskIdInProgress.get().equals(command.taskId))
           return Effect().none(); // duplicate, already in progress
-        else
-          return Effect().stash(); // other task in progress, wait with new task until later
+        else return Effect().stash(); // other task in progress, wait with new task until later
       } else {
         return Effect().persist(new TaskStarted(command.taskId));
       }
@@ -126,8 +124,7 @@ public class StashingExample {
       if (state.taskIdInProgress.isPresent()) {
         if (state.taskIdInProgress.get().equals(command.taskId))
           return Effect().persist(new TaskStep(command.taskId, command.instruction));
-        else
-          return Effect().stash(); // other task in progress, wait with new task until later
+        else return Effect().stash(); // other task in progress, wait with new task until later
       } else {
         return Effect().unhandled();
       }
@@ -137,8 +134,7 @@ public class StashingExample {
       if (state.taskIdInProgress.isPresent()) {
         if (state.taskIdInProgress.get().equals(command.taskId))
           return Effect().persist(new TaskCompleted(command.taskId));
-        else
-          return Effect().stash(); // other task in progress, wait with new task until later
+        else return Effect().stash(); // other task in progress, wait with new task until later
       } else {
         return Effect().unhandled();
       }
@@ -146,14 +142,12 @@ public class StashingExample {
 
     @Override
     public EventHandler<State, Event> eventHandler() {
-      return
-        eventHandlerBuilder()
-        .matchEvent(TaskStarted.class, (state, event) -> new State(Optional.of(event.taskId)))
-        .matchEvent(TaskStep.class, (state, event) -> state)
-        .matchEvent(TaskCompleted.class, (state, event) -> new State(Optional.empty()))
-        .build();
+      return eventHandlerBuilder()
+          .matchEvent(TaskStarted.class, (state, event) -> new State(Optional.of(event.taskId)))
+          .matchEvent(TaskStep.class, (state, event) -> state)
+          .matchEvent(TaskCompleted.class, (state, event) -> new State(Optional.empty()))
+          .build();
     }
-
   }
-  //#stashing
+  // #stashing
 }
