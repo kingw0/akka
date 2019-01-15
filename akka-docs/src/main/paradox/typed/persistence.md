@@ -447,10 +447,11 @@ akka.persistence.typed.stash-capacity = 10000
 ```
 
 Note that the stashed commands are kept in an in-memory buffer, so in case of a crash they will not be
-processed. They will be discarded if the actor (entity) is passivated or rebalanced by Cluster Sharding.
-They will also be discarded if the actor is restarted (or stopped) due to that an exception was thrown
-from processing a command or side effect after persisting. The stash buffer is preserved for persist
-failures if an `onPersistFailure` backoff supervisor strategy is defined.
+processed.
+
+* Stashed commands are discarded if the actor (entity) is passivated or rebalanced by Cluster Sharding.
+* Stashed commands are discarded if the actor is restarted (or stopped) due to that an exception was thrown from processing a command or side effect after persisting.
+* Stashed commands are preserved and processed later in case of failure in storing events if an `onPersistFailure` backoff supervisor strategy is defined.
 
 It's allowed to stash messages while unstashing. Those newly added commands will not be processed by the
 `unstashAll` effect that was in progress and have to be unstashed by another `unstashAll`.

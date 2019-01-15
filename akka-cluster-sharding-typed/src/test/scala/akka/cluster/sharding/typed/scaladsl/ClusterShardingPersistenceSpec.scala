@@ -36,8 +36,8 @@ import org.scalatest.WordSpecLike
 object ClusterShardingPersistenceSpec {
   val config = ConfigFactory.parseString(
     """
-      akka.loglevel = DEBUG
-      akka.persistence.typed.log-stashing = on
+      akka.loglevel = INFO
+      #akka.persistence.typed.log-stashing = on
 
       akka.actor.provider = cluster
 

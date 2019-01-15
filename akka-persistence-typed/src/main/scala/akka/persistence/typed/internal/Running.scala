@@ -340,7 +340,7 @@ private[akka] object Running {
         behavior
 
       case _ ⇒
-        throw new IllegalArgumentException(s"Not supported side effect detected [${effect.getClass.getName}]!")
+        throw new IllegalArgumentException(s"Unsupported side effect detected [${effect.getClass.getName}]")
     }
   }
 
